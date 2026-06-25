@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Library — Adage Automation</title>
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --teal:        #0B6E6E;
+      --teal-light:  #0D8080;
+      --teal-pale:   #E6F4F4;
+      --teal-dark:   #084F4F;
+      --white:       #FFFFFF;
+      --grey-50:     #F7F8F8;
+      --grey-100:    #EEF0F0;
+      --grey-200:    #DDE2E2;
+      --grey-300:    #B8C0C0;
+      --grey-600:    #5A6464;
+      --grey-800:    #2C3838;
+      --grey-900:    #1A2222;
+
+      --font-ui:     'Inter', system-ui, -apple-system, sans-serif;
+      --radius:      6px;
+      --radius-card: 8px;
+      --shadow-card: 0 1px 4px rgba(0,0,0,.07), 0 4px 16px rgba(11,110,110,.07);
+      --nav-h:       60px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--grey-50);
+      color: var(--grey-900);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--grey-200);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 20px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-logo svg { width: 18px; height: 18px; fill: white; }
+
+    .nav-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--grey-900);
+      line-height: 1.2;
+    }
+
+    .nav-title span {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--grey-600);
+    }
+
+    .nav-search {
+      flex: 1;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .nav-search input {
+      width: 100%;
+      padding: 9px 14px 9px 38px;
+      border: 1px solid var(--grey-200);
+      border-radius: 20px;
+      font-size: 14px;
+      background: var(--grey-50);
+      color: var(--grey-900);
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+
+    .nav-search input:focus {
+      border-color: var(--teal);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(11,110,110,.10);
+    }
+
+    .nav-search .search-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--grey-300);
+      pointer-events: none;
+    }
+
+    .nav-user {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-user-name {
+      font-size: 13px;
+      color: var(--grey-600);
+    }
+
+    .btn-logout {
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--grey-600);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    /* ── SIDEBAR FILTERS ── */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      position: sticky;
+      top: calc(var(--nav-h) + 24px);
+    }
+
+    .sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--grey-600);
+      margin-bottom: 14px;
+    }
+
+    .filter-section {
+      margin-bottom: 20px;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--grey-800);
+      margin-bottom: 8px;
+    }
+
+    .filter-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .filter-list li button {
+      width: 100%;
+      text-align: left;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: var(--grey-600);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background .12s, color .12s;
+    }
+
+    .filter-list li button:hover {
+      background: var(--teal-pale);
+      color: var(--teal);
+    }
+
+    .filter-list li button.active {
+      background: var(--teal);
+      color: white;
+      font-weight: 500;
+    }
+
+    .filter-reset {
+      font-size: 12px;
+      color: var(--teal);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 4px;
+      text-decoration: underline;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--grey-600);
+    }
+
+    .results-count strong {
+      color: var(--grey-900);
+    }
+
+    /* ── PRODUCT GRID ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .product-card {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .15s, border-color .15s, transform .15s;
+      cursor: pointer;
+    }
+
+    .product-card:hover {
+      box-shadow: var(--shadow-card);
+      border-color: var(--teal-light);
+      transform: translateY(-2px);
+    }
+
+    .card-thumb {
+      height: 140px;
+      background: var(--teal-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .card-thumb .placeholder-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-thumb .placeholder-icon svg {
+      width: 40px; height: 40px;
+      fill: var(--teal);
+      opacity: .35;
+    }
+
+    .card-thumb .placeholder-icon span {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--teal);
+      opacity: .5;
+    }
+
+    .card-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 20px;
+    }
+
+    .badge-industry {
+      background: var(--teal-pale);
+      color: var(--teal-dark);
+    }
+
+    .badge-company {
+      background: var(--grey-100);
+      color: var(--grey-600);
+    }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--grey-900);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--grey-600);
+      line-height: 1.5;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-top: 1px solid var(--grey-100);
+      font-size: 12px;
+      color: var(--teal);
+      font-weight: 500;
+    }
+
+    .card-footer svg {
+      width: 14px; height: 14px;
+      stroke: var(--teal);
+      fill: none;
+    }
+
+    .card-footer-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-edit {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--grey-600);
+      background: var(--grey-100);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-edit:hover {
+      background: var(--teal-pale);
+      border-color: var(--teal-light);
+      color: var(--teal);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      grid-column: 1/-1;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .empty-state svg {
+      width: 48px; height: 48px;
+      fill: var(--grey-300);
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      color: var(--grey-600);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      color: var(--grey-300);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-brand" href="library.html">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+      </div>
+      <div class="nav-title">
+        Adage Automation
+        <span>Product Portal</span>
+      </div>
+    </a>
+
+    <div class="nav-search">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search products, companies, categories…" autocomplete="off" />
+    </div>
+
+    <div class="nav-user">
+      <span class="nav-user-name" id="userName">—</span>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <!-- ── PAGE ── -->
+  <div class="page-wrap">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-title">Filters</div>
+
+      <div class="filter-section">
+        <div class="filter-label">Industry</div>
+        <ul class="filter-list" id="industryFilter"></ul>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Company</div>
+        <ul class="filter-list" id="companyFilter"></ul>
+      </div>
+
+      <div class="filter-section">
+        <div class="filter-label">Category</div>
+        <ul class="filter-list" id="categoryFilter"></ul>
+      </div>
+
+      <button class="filter-reset" onclick="resetFilters()">Clear all filters</button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="results-header">
+        <span class="results-count" id="resultsCount"></span>
+      </div>
+      <div class="product-grid" id="productGrid"></div>
+    </main>
+
+  </div>
+
+  <script src="data.js"></script>
+  <script src="js/load-products.js"></script>
+  <script>
+    async function init() {
+      await loadProductsFromServer();
+
+    // ── AUTH GUARD ──
+    const user = sessionStorage.getItem("adage_user");
+    if (!user) window.location.href = "index.html";
+    const isAdmin = user === "admin@adageautomation.com";
+    document.getElementById("userName").textContent = user ? user.split("@")[0] : "";
+
+    function logout() {
+      sessionStorage.removeItem("adage_user");
+      sessionStorage.removeItem("adage_auth");
+      window.location.href = "index.html";
+    }
+
+    // ── STATE ──
+    let activeFilters = { industry: null, company: null, category: null };
+    let searchQuery   = "";
+
+    // ── RENDER FILTER LISTS ──
+    function renderFilterList(elId, values, key) {
+      const el = document.getElementById(elId);
+      el.innerHTML = "";
+      values.forEach(v => {
+        const li  = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.textContent = v;
+        btn.className   = activeFilters[key] === v ? "active" : "";
+        btn.onclick     = () => toggleFilter(key, v);
+        li.appendChild(btn);
+        el.appendChild(li);
+      });
+    }
+
+    function toggleFilter(key, value) {
+      activeFilters[key] = activeFilters[key] === value ? null : value;
+      renderAll();
+    }
+
+    function resetFilters() {
+      activeFilters = { industry: null, company: null, category: null };
+      document.getElementById("searchInput").value = "";
+      searchQuery = "";
+      renderAll();
+    }
+
+    // ── FILTER + SEARCH LOGIC ──
+    function getFiltered() {
+      const q = searchQuery.toLowerCase();
+      return PRODUCTS.filter(p => {
+        if (activeFilters.industry && p.industry !== activeFilters.industry) return false;
+        if (activeFilters.company  && p.company  !== activeFilters.company)  return false;
+        if (activeFilters.category && p.category !== activeFilters.category) return false;
+        if (q) {
+          const haystack = [p.name, p.company, p.industry, p.category, p.description, ...(p.tags||[])]
+            .join(" ").toLowerCase();
+          if (!haystack.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    // ── RENDER CARDS ──
+    function renderCards(products) {
+      const grid = document.getElementById("productGrid");
+      grid.innerHTML = "";
+
+      if (!products.length) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+            <h3>No products found</h3>
+            <p>Try a different search term or clear your filters.</p>
+          </div>`;
+        return;
+      }
+
+      products.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.onclick   = () => openProduct(p);
+
+        const thumb = p.image
+          ? `<img src="${p.image}" alt="${p.name}" />`
+          : `<div class="placeholder-icon">
+               <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+               <span>${p.category}</span>
+             </div>`;
+
+        card.innerHTML = `
+          <div class="card-thumb">${thumb}</div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="badge badge-industry">${p.industry}</span>
+              <span class="badge badge-company">${p.company}</span>
+            </div>
+            <div class="card-name">${p.name}</div>
+            <div class="card-desc">${p.description}</div>
+          </div>
+          <div class="card-footer">
+            <span>View OneDrive Folder</span>
+            <div class="card-footer-actions">
+              ${isAdmin ? `<button type="button" class="btn-edit" onclick="event.stopPropagation(); openEditor(${p.id})">Edit</button>` : ""}
+              <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </div>
+          </div>`;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function openProduct(p) {
+      sessionStorage.setItem("adage_product", JSON.stringify(p));
+      window.location.href = `product.html?id=${p.id}`;
+    }
+
+    function openEditor(id) {
+      window.location.href = `adage-data-editor.html?id=${id}`;
+    }
+
+    // ── RENDER ALL ──
+    function renderAll() {
+      renderFilterList("industryFilter", INDUSTRIES, "industry");
+      renderFilterList("companyFilter",  COMPANIES,  "company");
+      renderFilterList("categoryFilter", CATEGORIES, "category");
+
+      const filtered = getFiltered();
+      renderCards(filtered);
+
+      const total = PRODUCTS.length;
+      const shown = filtered.length;
+      const count = document.getElementById("resultsCount");
+      count.innerHTML = shown === total
+        ? `Showing all <strong>${total}</strong> products`
+        : `Showing <strong>${shown}</strong> of <strong>${total}</strong> products`;
+    }
+
+    // ── SEARCH ──
+    document.getElementById("searchInput").addEventListener("input", e => {
+      searchQuery = e.target.value.trim();
+      renderAll();
+    });
+
+    // ── INIT ──
+    renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>

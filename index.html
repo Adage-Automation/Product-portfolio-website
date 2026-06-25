@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adage Automation — Product Portal</title>
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --teal:        #0B6E6E;
+      --teal-light:  #0D8080;
+      --teal-pale:   #E6F4F4;
+      --teal-dark:   #084F4F;
+      --white:       #FFFFFF;
+      --grey-50:     #F7F8F8;
+      --grey-100:    #EEF0F0;
+      --grey-300:    #B8C0C0;
+      --grey-600:    #5A6464;
+      --grey-900:    #1A2222;
+      --error:       #C0392B;
+
+      --font-ui:     'Inter', system-ui, -apple-system, sans-serif;
+      --radius:      6px;
+      --shadow-card: 0 2px 12px rgba(11,110,110,.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--grey-50);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--teal), var(--teal-light));
+    }
+
+    /* ── LOGIN CARD ── */
+    .login-wrap {
+      width: 100%;
+      max-width: 400px;
+      padding: 24px;
+    }
+
+    .login-brand {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .login-brand .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      background: var(--teal);
+      border-radius: 12px;
+      margin-bottom: 14px;
+    }
+
+    .login-brand .logo-mark svg {
+      width: 32px; height: 32px; fill: white;
+    }
+
+    .login-brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--grey-900);
+      letter-spacing: -.3px;
+    }
+
+    .login-brand p {
+      font-size: 13px;
+      color: var(--grey-600);
+      margin-top: 4px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--grey-100);
+      border-radius: 10px;
+      padding: 32px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .login-card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--grey-900);
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--grey-600);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--grey-300);
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: var(--grey-900);
+      background: var(--white);
+      outline: none;
+      transition: border-color .15s;
+      margin-bottom: 18px;
+    }
+
+    input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(11,110,110,.12);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--teal);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background .15s;
+      margin-top: 4px;
+    }
+
+    .btn-login:hover { background: var(--teal-dark); }
+
+    .error-msg {
+      font-size: 13px;
+      color: var(--error);
+      background: #fdf0ee;
+      border: 1px solid #f1c4be;
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--grey-600);
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.5;
+    }
+
+    .hint strong { color: var(--teal); }
+
+    footer {
+      margin-top: 32px;
+      font-size: 11px;
+      color: var(--grey-300);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="logo-mark">
+        <!-- Simple gear/industrial icon -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-5h2v2h-2zm0-8h2v6h-2z"/>
+        </svg>
+      </div>
+      <h1>Adage Automation</h1>
+      <p>Product Portfolio Portal</p>
+    </div>
+
+    <div class="login-card">
+      <h2>Sign in to continue</h2>
+
+      <div class="error-msg" id="errorMsg">
+        Incorrect email or password. Please try again.
+      </div>
+
+      <label for="email">Email address</label>
+      <input type="email" id="email" placeholder="you@adageautomation.com" autocomplete="email" />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+
+      <button class="btn-login" onclick="handleLogin()">Sign In</button>
+
+      <p class="hint">
+        Access is restricted to Adage Automation staff.<br />
+        Contact <strong>IT / Admin</strong> if you need access.
+      </p>
+    </div>
+
+    <footer>© 2025 Adage Automation. Internal use only.</footer>
+  </div>
+
+  <script>
+    // ── DEMO CREDENTIALS (replace with real auth integration) ──
+    // In production, this should call your backend auth endpoint.
+    const DEMO_USERS = [
+      { email: "admin@adageautomation.com",   password: "Adage@2025" },
+      { email: "sales@adageautomation.com",   password: "Sales@2025" },
+      { email: "marketing@adageautomation.com", password: "Mktg@2025" }
+    ];
+
+    function handleLogin() {
+      const email    = document.getElementById("email").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
+      const errEl    = document.getElementById("errorMsg");
+
+      errEl.style.display = "none";
+
+      if (!email || !password) {
+        errEl.textContent = "Please enter your email and password.";
+        errEl.style.display = "block";
+        return;
+      }
+
+      const match = DEMO_USERS.find(u => u.email === email && u.password === password);
+
+      if (match) {
+        sessionStorage.setItem("adage_user", email);
+        sessionStorage.setItem("adage_auth", JSON.stringify({ email, password }));
+        window.location.href = "library.html";
+      } else {
+        errEl.textContent = "Incorrect email or password. Please try again.";
+        errEl.style.display = "block";
+        document.getElementById("password").value = "";
+      }
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener("keydown", e => {
+      if (e.key === "Enter") handleLogin();
+    });
+
+    // Redirect if already logged in
+    if (sessionStorage.getItem("adage_user")) {
+      window.location.href = "library.html";
+    }
+  </script>
+</body>
+</html>

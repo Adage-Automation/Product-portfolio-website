@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>data.js Editor — Adage Automation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+:root {
+  --bg:       #ffffff;
+  --bg2:      #f7f8f8;
+  --bg3:      #eef0f0;
+  --border:   #dde2e2;
+  --border2:  #b8c0c0;
+  --text:     #1a2222;
+  --text2:    #5a6464;
+  --text3:    #9aa4a4;
+  --teal:     #0b6e6e;
+  --teal-pale:#e6f4f4;
+  --teal-dark:#084f4f;
+  --danger:   #c0392b;
+  --danger-bg:#fdf0ee;
+  --success:  #0b6e6e;
+  --radius:   6px;
+  --radius-lg:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:14px;background:var(--bg2);color:var(--text);min-height:100vh}
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo{width:32px;height:32px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo i{color:#fff;font-size:18px}
+.app-title{font-size:15px;font-weight:700;color:var(--text)}
+.app-sub{font-size:12px;color:var(--text2)}
+.topbar-right{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);cursor:pointer;transition:background .12s,border-color .12s;font-family:inherit;text-decoration:none}
+.btn:hover{background:var(--bg3);border-color:var(--border2)}
+.btn.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn.primary:hover{background:var(--teal-dark)}
+.btn.danger{color:var(--danger);border-color:#f1c4be}
+.btn.danger:hover{background:var(--danger-bg)}
+.wrap{max-width:1200px;margin:0 auto;padding:20px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 18px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px}
+.stat-val{font-size:26px;font-weight:700;color:var(--text)}
+.layout{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:flex-start}
+.sidebar{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.sidebar-head{padding:12px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-bottom:1px solid var(--border)}
+.prod-list{max-height:calc(100vh - 280px);overflow-y:auto}
+.prod-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);gap:8px;transition:background .1s}
+.prod-item:last-child{border-bottom:none}
+.prod-item:hover{background:var(--bg2)}
+.prod-item.active{background:var(--teal-pale)}
+.prod-item-info{overflow:hidden;flex:1}
+.prod-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-company{font-size:11px;color:var(--text2);margin-top:1px}
+.prod-del{opacity:0;background:none;border:none;cursor:pointer;color:var(--danger);font-size:16px;padding:2px;line-height:1;border-radius:4px;display:flex;align-items:center}
+.prod-item:hover .prod-del{opacity:1}
+.add-btn{width:100%;display:flex;align-items:center;gap:6px;padding:11px 14px;font-size:13px;color:var(--teal);background:none;border:none;border-top:1px solid var(--border);cursor:pointer;font-family:inherit;font-weight:500;transition:background .1s}
+.add-btn:hover{background:var(--teal-pale)}
+.panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:300px;color:var(--text3)}
+.empty i{font-size:40px}
+.empty p{font-size:13px}
+.section-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:12px}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.field-full{grid-column:1/-1}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:5px}
+input[type=text],input[type=url],textarea,select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;color:var(--text);background:var(--bg);outline:none;transition:border-color .15s}
+input:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(11,110,110,.1)}
+textarea{min-height:76px;resize:vertical}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:24px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--teal-pale);border:1px solid rgba(11,110,110,.2);border-radius:20px;font-size:12px;color:var(--teal-dark)}
+.tag button{background:none;border:none;cursor:pointer;color:var(--teal);font-size:15px;line-height:1;padding:0;display:flex;align-items:center}
+.tag-add{display:flex;gap:8px}
+.tag-add input{flex:1}
+.tag-add button{padding:9px 16px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);cursor:pointer;font-family:inherit;white-space:nowrap;color:var(--text);transition:background .1s}
+.tag-add button:hover{background:var(--bg3)}
+.form-actions{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.save-notice{font-size:12px;color:var(--success);font-weight:500;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:4px}
+.save-notice.show{opacity:1}
+.export-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);margin-top:16px;display:none;overflow:hidden}
+.preview-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.preview-head span{font-size:12px;font-weight:600;color:var(--text2)}
+.preview-actions{display:flex;gap:8px;flex-shrink:0}
+.preview-note{font-size:12px;color:var(--text2);line-height:1.5;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--teal-pale);color:var(--teal-dark)}
+.save-status{font-size:12px;font-weight:500;margin-left:8px}
+.save-status.ok{color:var(--success)}
+.save-status.err{color:var(--danger)}
+.preview-code{background:var(--bg2);padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;white-space:pre;overflow-x:auto;max-height:320px;overflow-y:auto;line-height:1.5;color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo"><i class="ti ti-settings-2"></i></div>
+    <div>
+      <div class="app-title">data.js Editor</div>
+      <div class="app-sub" id="prodCountSub">Loading…</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a class="btn" href="library.html"><i class="ti ti-arrow-left"></i> Back to Library</a>
+    <button class="btn primary" onclick="saveToPortal()"><i class="ti ti-cloud-upload"></i> Save to portal</button>
+    <button class="btn" onclick="togglePreview()"><i class="ti ti-file-code"></i> Preview &amp; Download</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Products</div><div class="stat-val" id="statTotal">0</div></div>
+    <div class="stat"><div class="stat-label">Industries</div><div class="stat-val" id="statInd">0</div></div>
+    <div class="stat"><div class="stat-label">Companies</div><div class="stat-val" id="statCo">0</div></div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-head">Products</div>
+      <div class="prod-list" id="prodList"></div>
+      <button class="add-btn" onclick="addProduct()"><i class="ti ti-plus"></i> Add product</button>
+    </div>
+    <div>
+      <div class="panel" id="editPanel">
+        <div class="empty">
+          <i class="ti ti-file-description"></i>
+          <p>Select a product to edit, or add a new one</p>
+        </div>
+      </div>
+      <div class="export-box" id="previewPanel">
+        <div class="preview-note">
+          Edits are kept in this browser until you click <strong>Save to portal</strong>.
+          On Vercel, connect a KV database (see README) so changes appear for everyone.
+        </div>
+        <div class="preview-head">
+          <span>data.js preview</span>
+          <div class="preview-actions">
+            <button class="btn primary" onclick="saveToPortal()"><i class="ti ti-cloud-upload"></i> Save to portal</button>
+            <button class="btn" onclick="downloadFile()"><i class="ti ti-download"></i> Download backup</button>
+            <button class="btn" onclick="togglePreview()"><i class="ti ti-x"></i> Close</button>
+          </div>
+        </div>
+        <pre class="preview-code" id="previewCode"></pre>
+        <div class="preview-note" id="saveStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="js/load-products.js"></script>
+<script>
+// Admin-only editor
+const editorUser = sessionStorage.getItem("adage_user");
+if (editorUser !== "admin@adageautomation.com") {
+  window.location.href = editorUser ? "library.html" : "index.html";
+}
+
+// Mutable working copy — loaded from server or data.js
+let products = [];
+let activeId = null;
+let nextId = 1;
+
+async function initEditor() {
+  await loadProductsFromServer();
+  products = PRODUCTS.map(p => ({ ...p, tags: [...(p.tags || [])] }));
+  nextId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+
+  renderList();
+
+  const urlId = parseInt(new URLSearchParams(window.location.search).get("id"), 10);
+  if (urlId && products.some(p => p.id === urlId)) {
+    selectProduct(urlId);
+  }
+}
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updateStats(){
+  document.getElementById('statTotal').textContent = products.length;
+  document.getElementById('statInd').textContent = new Set(products.map(p=>p.industry).filter(Boolean)).size;
+  document.getElementById('statCo').textContent = new Set(products.map(p=>p.company).filter(Boolean)).size;
+  document.getElementById('prodCountSub').textContent = products.length + ' products';
+}
+
+function renderList(){
+  const el = document.getElementById('prodList');
+  el.innerHTML = '';
+  products.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'prod-item' + (p.id===activeId?' active':'');
+    div.innerHTML = `
+      <div class="prod-item-info">
+        <div class="prod-name">${esc(p.name||'Untitled')}</div>
+        <div class="prod-company">${esc(p.company||'—')}</div>
+      </div>
+      <button class="prod-del" title="Delete product" onclick="deleteProduct(event,${p.id})">
+        <i class="ti ti-trash"></i>
+      </button>`;
+    div.onclick = (e)=>{ if(!e.target.closest('.prod-del')) selectProduct(p.id); };
+    el.appendChild(div);
+  });
+  updateStats();
+}
+
+function selectProduct(id){
+  activeId = id;
+  renderList();
+  const p = products.find(x=>x.id===id);
+  if(p) renderForm(p);
+}
+
+function renderTagsHTML(tags){
+  return (tags||[]).map(t=>`<span class="tag">${esc(t)}<button onclick="removeTag('${esc(t).replace(/'/g,"\\'")}')"><i class="ti ti-x" style="font-size:11px"></i></button></span>`).join('');
+}
+
+function renderForm(p){
+  document.getElementById('editPanel').innerHTML = `
+    <div class="section-head">Edit product</div>
+    <div class="field-grid">
+      <div class="field field-full">
+        <label>Product name</label>
+        <input type="text" value="${esc(p.name)}" oninput="upd('name',this.value)" placeholder="e.g. FlowMaster Pro 3000"/>
+      </div>
+      <div class="field">
+        <label>Company / Brand</label>
+        <input type="text" value="${esc(p.company)}" oninput="upd('company',this.value)" placeholder="e.g. Emerson"/>
+      </div>
+      <div class="field">
+        <label>Industry</label>
+        <input type="text" value="${esc(p.industry)}" oninput="upd('industry',this.value)" placeholder="e.g. Oil & Gas"/>
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <input type="text" value="${esc(p.category)}" oninput="upd('category',this.value)" placeholder="e.g. Flow Measurement"/>
+      </div>
+      <div class="field">
+        <label>OneDrive link</label>
+        <input type="url" value="${esc(p.onedrive)}" oninput="upd('onedrive',this.value)" placeholder="https://onedrive.live.com/…"/>
+      </div>
+      <div class="field field-full">
+        <label>Description</label>
+        <textarea oninput="upd('description',this.value)" placeholder="One paragraph product description.">${esc(p.description)}</textarea>
+      </div>
+      <div class="field field-full">
+        <label>Image URL <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="url" value="${esc(p.image)}" oninput="upd('image',this.value)" placeholder="Leave blank for auto placeholder"/>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div class="section-head">Tags</div>
+    <div class="tags-row" id="tagRow">${renderTagsHTML(p.tags)}</div>
+    <div class="tag-add">
+      <input type="text" id="tagInput" placeholder="Add a tag…" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag()}"/>
+      <button onclick="addTag()"><i class="ti ti-plus"></i> Add</button>
+    </div>
+    <div class="form-actions">
+      <span class="save-notice" id="saveNotice"><i class="ti ti-check"></i> Saved</span>
+      <button class="btn danger" onclick="deleteProduct(null,${p.id})"><i class="ti ti-trash"></i> Delete product</button>
+    </div>
+  `;
+}
+
+function upd(field, value){
+  const p = products.find(x=>x.id===activeId);
+  if(!p) return;
+  p[field] = value;
+  showSaved();
+  updateStats();
+  if(field==='name'||field==='company') renderList();
+  refreshPreview();
+}
+
+function refreshPreview(){
+  const panel = document.getElementById('previewPanel');
+  if(panel.style.display==='block') document.getElementById('previewCode').textContent = generateJS();
+}
+
+function showSaved(){
+  const el = document.getElementById('saveNotice');
+  if(!el) return;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 1800);
+}
+
+function addTag(){
+  const inp = document.getElementById('tagInput');
+  const val = (inp.value||'').trim();
+  if(!val) return;
+  const p = products.find(x=>x.id===activeId);
+  if(!p) return;
+  if(!p.tags) p.tags=[];
+  if(!p.tags.includes(val)) p.tags.push(val);
+  inp.value='';
+  document.getElementById('tagRow').innerHTML = renderTagsHTML(p.tags);
+  showSaved();
+  refreshPreview();
+}
+
+function removeTag(tag){
+  const p = products.find(x=>x.id===activeId);
+  if(!p) return;
+  p.tags = (p.tags||[]).filter(t=>t!==tag);
+  document.getElementById('tagRow').innerHTML = renderTagsHTML(p.tags);
+  showSaved();
+  refreshPreview();
+}
+
+function addProduct(){
+  const p = {id:nextId++,name:'New Product',company:'',industry:'',category:'',description:'',onedrive:'https://onedrive.live.com/your-link-here',tags:[],image:''};
+  products.push(p);
+  selectProduct(p.id);
+}
+
+function deleteProduct(e, id){
+  if(e) e.stopPropagation();
+  const p = products.find(x=>x.id===id);
+  if(!confirm('Delete "' + (p?p.name:'this product') + '"?')) return;
+  products = products.filter(p=>p.id!==id);
+  if(activeId===id){
+    activeId=null;
+    document.getElementById('editPanel').innerHTML='<div class="empty"><i class="ti ti-file-description"></i><p>Select a product to edit, or add a new one</p></div>';
+  }
+  renderList();
+  refreshPreview();
+}
+
+function generateJS(){
+  const lines = products.map(p=>{
+    return `  {\n    id: ${p.id},\n    name: ${JSON.stringify(p.name||'')},\n    company: ${JSON.stringify(p.company||'')},\n    industry: ${JSON.stringify(p.industry||'')},\n    category: ${JSON.stringify(p.category||'')},\n    description: ${JSON.stringify(p.description||'')},\n    onedrive: ${JSON.stringify(p.onedrive||'')},\n    tags: ${JSON.stringify(p.tags||[])},\n    image: ${JSON.stringify(p.image||'')}\n  }`;
+  });
+  return `// ============================================================\n//  ADAGE AUTOMATION — PRODUCT DATA\n//  Edit this file to add, remove, or update products.\n// ============================================================\n\nconst PRODUCTS = [\n${lines.join(',\n')}\n];\n\nconst INDUSTRIES  = [...new Set(PRODUCTS.map(p => p.industry))].sort();\nconst COMPANIES   = [...new Set(PRODUCTS.map(p => p.company))].sort();\nconst CATEGORIES  = [...new Set(PRODUCTS.map(p => p.category))].sort();`;
+}
+
+function togglePreview(){
+  const panel = document.getElementById('previewPanel');
+  const open = panel.style.display === 'block';
+  if(open){
+    panel.style.display = 'none';
+    return;
+  }
+  document.getElementById('previewCode').textContent = generateJS();
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function downloadFile(){
+  const blob = new Blob([generateJS()], {type:'text/javascript'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'data.js';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function saveToPortal(){
+  let statusEl = document.getElementById('saveStatus');
+  if(!statusEl){
+    const panel = document.getElementById('previewPanel');
+    if(panel.style.display !== 'block'){
+      document.getElementById('previewCode').textContent = generateJS();
+      panel.style.display = 'block';
+    }
+    statusEl = document.getElementById('saveStatus');
+  }
+  statusEl.innerHTML = '<span class="save-status">Saving…</span>';
+
+  const authRaw = sessionStorage.getItem('adage_auth');
+  if(!authRaw){
+    statusEl.innerHTML = '<span class="save-status err">Sign in again as admin, then retry.</span>';
+    return;
+  }
+
+  let auth;
+  try { auth = JSON.parse(authRaw); } catch {
+    statusEl.innerHTML = '<span class="save-status err">Session expired. Sign in again.</span>';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/products', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ products, email: auth.email, password: auth.password })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if(res.ok){
+      statusEl.innerHTML = '<span class="save-status ok"><i class="ti ti-check"></i> Saved — all users will see changes on refresh.</span>';
+      return;
+    }
+
+    if(res.status === 503){
+      statusEl.innerHTML = '<span class="save-status err">Vercel KV not connected. See README, or use Download backup and redeploy.</span>';
+      return;
+    }
+
+    statusEl.innerHTML = `<span class="save-status err">${data.error || 'Save failed.'}</span>`;
+  } catch {
+    statusEl.innerHTML = '<span class="save-status err">Could not reach /api/products. Deploy on Vercel with KV, or save locally via Download backup.</span>';
+  }
+}
+
+initEditor();
+</script>
+</body>
+</html>

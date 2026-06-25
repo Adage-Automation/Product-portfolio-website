@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product — Adage Automation</title>
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --teal:        #0B6E6E;
+      --teal-light:  #0D8080;
+      --teal-pale:   #E6F4F4;
+      --teal-dark:   #084F4F;
+      --white:       #FFFFFF;
+      --grey-50:     #F7F8F8;
+      --grey-100:    #EEF0F0;
+      --grey-200:    #DDE2E2;
+      --grey-300:    #B8C0C0;
+      --grey-600:    #5A6464;
+      --grey-800:    #2C3838;
+      --grey-900:    #1A2222;
+
+      --font-ui:     'Inter', system-ui, -apple-system, sans-serif;
+      --radius:      6px;
+      --nav-h:       60px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--grey-50);
+      color: var(--grey-900);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--grey-200);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 20px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo {
+      width: 32px; height: 32px;
+      background: var(--teal);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-logo svg { width: 18px; height: 18px; fill: white; }
+
+    .nav-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--grey-900);
+      line-height: 1.2;
+    }
+
+    .nav-title span {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--grey-600);
+    }
+
+    .nav-user {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-user-name { font-size: 13px; color: var(--grey-600); }
+
+    .btn-logout {
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      background: white;
+      color: var(--grey-600);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-logout:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--grey-300);
+    }
+
+    .breadcrumb a {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .breadcrumb .sep { color: var(--grey-300); }
+
+    .breadcrumb .current { color: var(--grey-600); }
+
+    /* ── PAGE ── */
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* ── PRODUCT HEADER ── */
+    .product-header {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 24px;
+    }
+
+    .header-thumb {
+      width: 100px; height: 100px;
+      border-radius: 8px;
+      background: var(--teal-pale);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .header-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .header-thumb svg {
+      width: 44px; height: 44px;
+      fill: var(--teal);
+      opacity: .3;
+    }
+
+    .header-info { flex: 1; }
+
+    .header-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 20px;
+    }
+
+    .badge-industry { background: var(--teal-pale); color: var(--teal-dark); }
+    .badge-company  { background: var(--grey-100);  color: var(--grey-600); }
+    .badge-category { background: var(--grey-200);  color: var(--grey-800); }
+
+    .header-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--grey-900);
+      letter-spacing: -.4px;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .header-desc {
+      font-size: 14px;
+      color: var(--grey-600);
+      line-height: 1.6;
+      max-width: 600px;
+    }
+
+    /* ── ONEDRIVE CTA ── */
+    .onedrive-cta {
+      margin-left: auto;
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    .btn-onedrive {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: var(--teal);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+
+    .btn-onedrive:hover { background: var(--teal-dark); }
+
+    .btn-edit {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 20px;
+      background: var(--white);
+      color: var(--teal);
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: all .15s;
+      white-space: nowrap;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-edit:hover {
+      background: var(--teal-pale);
+      border-color: var(--teal-light);
+    }
+
+    .admin-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .btn-onedrive svg {
+      width: 18px; height: 18px;
+      fill: white;
+    }
+
+    .onedrive-hint {
+      font-size: 11px;
+      color: var(--grey-300);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    /* ── DETAILS SECTION ── */
+    .detail-section {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--grey-300);
+      margin-bottom: 16px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .detail-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .detail-item:nth-last-child(-n+3) { border-bottom: none; }
+
+    .detail-key {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--grey-300);
+      margin-bottom: 4px;
+    }
+
+    .detail-val {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--grey-900);
+    }
+
+    /* ── TAGS SECTION ── */
+    .tags-section {
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: 10px;
+      padding: 24px 32px;
+      margin-bottom: 20px;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag-chip {
+      padding: 5px 14px;
+      background: var(--grey-50);
+      border: 1px solid var(--grey-200);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--grey-600);
+    }
+
+    /* ── BACK BTN ── */
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--teal);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 20px;
+      text-decoration: none;
+    }
+
+    .btn-back:hover { text-decoration: underline; }
+
+    .btn-back svg {
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    /* ── NOTICE BOX ── */
+    .notice {
+      background: var(--teal-pale);
+      border: 1px solid rgba(11,110,110,.15);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--teal-dark);
+      line-height: 1.5;
+    }
+
+    .notice strong { font-weight: 600; }
+
+    @media (max-width: 700px) {
+      .product-header { flex-direction: column; }
+      .onedrive-cta   { margin-left: 0; width: 100%; }
+      .btn-onedrive   { width: 100%; justify-content: center; }
+      .detail-grid    { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <a class="nav-brand" href="library.html">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+      </div>
+      <div class="nav-title">
+        Adage Automation
+        <span>Product Portal</span>
+      </div>
+    </a>
+    <div class="nav-user">
+      <span class="nav-user-name" id="userName">—</span>
+      <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="page" id="pageContent">
+    <!-- rendered by JS -->
+  </div>
+
+  <script src="data.js"></script>
+  <script src="js/load-products.js"></script>
+  <script>
+    async function init() {
+      await loadProductsFromServer();
+
+    // ── AUTH GUARD ──
+    const user = sessionStorage.getItem("adage_user");
+    if (!user) window.location.href = "index.html";
+    const isAdmin = user === "admin@adageautomation.com";
+    document.getElementById("userName").textContent = user ? user.split("@")[0] : "";
+
+    function logout() {
+      sessionStorage.removeItem("adage_user");
+      sessionStorage.removeItem("adage_auth");
+      sessionStorage.removeItem("adage_product");
+      window.location.href = "index.html";
+    }
+
+    // ── LOAD PRODUCT (sessionStorage or ?id= fallback from data.js) ──
+    function loadProduct() {
+      const productRaw = sessionStorage.getItem("adage_product");
+      if (productRaw) {
+        try { return JSON.parse(productRaw); } catch (_) {}
+      }
+      const id = parseInt(new URLSearchParams(window.location.search).get("id"), 10);
+      if (id) {
+        const found = PRODUCTS.find(x => x.id === id);
+        if (found) {
+          sessionStorage.setItem("adage_product", JSON.stringify(found));
+          return found;
+        }
+      }
+      return null;
+    }
+
+    const p = loadProduct();
+    if (!p) {
+      window.location.href = "library.html";
+    } else {
+
+    // Update page title
+    document.title = `${p.name} — Adage Automation`;
+
+    // ── RENDER ──
+    const page = document.getElementById("pageContent");
+
+    const thumb = p.image
+      ? `<img src="${p.image}" alt="${p.name}" />`
+      : `<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>`;
+
+    const tagsHtml = (p.tags || []).map(t => `<span class="tag-chip">${t}</span>`).join("");
+
+    page.innerHTML = `
+      <!-- BREADCRUMB -->
+      <nav class="breadcrumb">
+        <a href="library.html">Product Library</a>
+        <span class="sep">›</span>
+        <span class="current">${p.name}</span>
+      </nav>
+
+      <div style="padding-top:16px;">
+        <a href="library.html" class="btn-back">
+          <svg viewBox="0 0 24 24" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Back to Library
+        </a>
+      </div>
+
+      <!-- PRODUCT HEADER -->
+      <div class="product-header">
+        <div class="header-thumb">${thumb}</div>
+
+        <div class="header-info">
+          <div class="header-tags">
+            <span class="badge badge-industry">${p.industry}</span>
+            <span class="badge badge-company">${p.company}</span>
+            <span class="badge badge-category">${p.category}</span>
+          </div>
+          <div class="header-name">${p.name}</div>
+          <div class="header-desc">${p.description}</div>
+        </div>
+
+        <div class="onedrive-cta">
+          <div class="admin-actions">
+            <a href="${p.onedrive}" target="_blank" rel="noopener" class="btn-onedrive">
+              <svg viewBox="0 0 24 24">
+                <path d="M6.3 12.3L10 8.6V16h4V8.6l3.7 3.7 2.6-2.6-7.3-7.3-7.3 7.3 2.6 2.6zM19 19H5v2h14v-2z"/>
+              </svg>
+              Open OneDrive Folder
+            </a>
+            ${isAdmin ? `<a href="adage-data-editor.html?id=${p.id}" class="btn-edit">Edit Product</a>` : ""}
+          </div>
+          <div class="onedrive-hint">Catalogues, specs &amp; presentations</div>
+        </div>
+      </div>
+
+      <!-- PRODUCT DETAILS -->
+      <div class="detail-section">
+        <div class="section-title">Product Details</div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-key">Product Name</div>
+            <div class="detail-val">${p.name}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-key">Company / Brand</div>
+            <div class="detail-val">${p.company}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-key">Industry</div>
+            <div class="detail-val">${p.industry}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-key">Category</div>
+            <div class="detail-val">${p.category}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-key">Full Materials</div>
+            <div class="detail-val">
+              <a href="${p.onedrive}" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;font-weight:500;">
+                OneDrive Folder ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAGS -->
+      ${tagsHtml ? `
+      <div class="tags-section">
+        <div class="section-title">Tags</div>
+        <div class="tag-list">${tagsHtml}</div>
+      </div>` : ""}
+
+      <!-- PHASE 2 NOTICE -->
+      <div class="notice">
+        <strong>Phase 2 coming soon:</strong> In-page PDF catalogue viewer, embedded product videos, and detailed marketing summaries will be added in the next release. For now, all materials are available in the OneDrive folder above.
+      </div>
+    `;
+    }
+    }
+
+    init();
+  </script>
+</body>
+</html>
