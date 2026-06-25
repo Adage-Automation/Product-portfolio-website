@@ -1,7 +1,5 @@
 {
   "name": "adage-product-portal",
   "private": true,
-  "dependencies": {
-    "@vercel/kv": "^2.0.0"
-  }
+  "dependencies": {}
 }

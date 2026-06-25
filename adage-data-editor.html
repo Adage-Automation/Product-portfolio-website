@@ -101,6 +101,12 @@ textarea{min-height:76px;resize:vertical}
 .save-status{font-size:12px;font-weight:500;margin-left:8px}
 .save-status.ok{color:var(--success)}
 .save-status.err{color:var(--danger)}
+/* ── SOURCE BANNER ── */
+.source-banner{display:none;align-items:center;gap:8px;padding:10px 20px;font-size:12px;font-weight:500;border-bottom:1px solid var(--border)}
+.source-banner i{font-size:15px}
+.source-banner.ok{background:#f0faf0;color:#1a6b2e}
+.source-banner.warn{background:#fffbea;color:#7a5a00}
+.source-banner.err{background:var(--danger-bg);color:var(--danger)}
 </style>
 </head>
 <body>
@@ -115,7 +121,9 @@ textarea{min-height:76px;resize:vertical}
   </div>
   <div class="topbar-right">
     <a class="btn" href="library.html"><i class="ti ti-arrow-left"></i> Back to Library</a>
-    <button class="btn primary" onclick="saveToPortal()"><i class="ti ti-cloud-upload"></i> Save to portal</button>
+    <a class="btn primary" href="https://docs.google.com/spreadsheets/d/1kFfFCB57ekRwOgjxZFsZh9ojx-Q2xy6ObTiMNUZhqFs/edit" target="_blank" rel="noopener">
+      <i class="ti ti-table"></i> Edit in Google Sheets
+    </a>
     <button class="btn" onclick="downloadFile()"><i class="ti ti-download"></i> Download CSV</button>
   </div>
 </div>
@@ -177,15 +185,32 @@ let nextId = 1;
 
 async function initEditor() {
   await loadProductsFromServer();
-  products = PRODUCTS.map(p => ({
+  products = (window.PRODUCTS || []).map(p => ({
     ...p,
-    industries:       [...(p.industries       || [])],
-    useCases:         [...(p.useCases         || [])],
-    tags:             [...(p.tags             || [])],
-    technologyTags:   [...(p.technologyTags   || [])],
-    measuredComponent:[...(p.measuredComponent|| [])],
+    industries:        [...(p.industries        || [])],
+    useCases:          [...(p.useCases          || [])],
+    tags:              [...(p.tags              || [])],
+    technologyTags:    [...(p.technologyTags    || [])],
+    measuredComponent: [...(p.measuredComponent || [])],
   }));
   nextId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+
+  // Show source banner
+  const src = window.__productsSource;
+  const banner = document.getElementById('sourceBanner');
+  if (banner) {
+    if (src === 'sheet') {
+      banner.innerHTML = '<i class="ti ti-table-filled"></i> Live data from Google Sheets — edit products directly in the sheet.';
+      banner.className = 'source-banner ok';
+    } else if (src === 'csv') {
+      banner.innerHTML = '<i class="ti ti-alert-triangle"></i> Google Sheets unavailable — showing CSV fallback. Check sheet permissions.';
+      banner.className = 'source-banner warn';
+    } else {
+      banner.innerHTML = '<i class="ti ti-alert-circle"></i> Could not load product data. Check your network or sheet ID.';
+      banner.className = 'source-banner err';
+    }
+    banner.style.display = 'flex';
+  }
 
   renderList();
 
@@ -397,52 +422,7 @@ function downloadFile(){
   URL.revokeObjectURL(a.href);
 }
 
-async function saveToPortal(){
-  // Show status in the topbar area
-  let statusEl = document.getElementById('saveStatus');
-  if(!statusEl){
-    statusEl = document.createElement('span');
-    statusEl.id = 'saveStatus';
-    document.querySelector('.topbar-right').appendChild(statusEl);
-  }
-  statusEl.innerHTML = '<span class="save-status">Saving…</span>';
-
-  const authRaw = sessionStorage.getItem('adage_auth');
-  if(!authRaw){
-    statusEl.innerHTML = '<span class="save-status err">Sign in again as admin, then retry.</span>';
-    return;
-  }
-
-  let auth;
-  try { auth = JSON.parse(authRaw); } catch {
-    statusEl.innerHTML = '<span class="save-status err">Session expired. Sign in again.</span>';
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/products', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ products, email: auth.email, password: auth.password })
-    });
-    const data = await res.json().catch(() => ({}));
-
-    if(res.ok){
-      statusEl.innerHTML = '<span class="save-status ok"><i class="ti ti-check"></i> Saved</span>';
-      setTimeout(() => { statusEl.innerHTML = ''; }, 3000);
-      return;
-    }
-
-    if(res.status === 503){
-      statusEl.innerHTML = '<span class="save-status err">Vercel KV not connected.</span>';
-      return;
-    }
-
-    statusEl.innerHTML = `<span class="save-status err">${data.error || 'Save failed.'}</span>`;
-  } catch {
-    statusEl.innerHTML = '<span class="save-status err">Could not reach /api/products.</span>';
-  }
-}
+async function saveToPortal(){ /* retired — edit data in Google Sheets */ }
 
 function openDrillDown(type) {
   const backdrop = document.getElementById('modalBackdrop');

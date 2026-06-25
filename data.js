@@ -1,95 +1,138 @@
 // ============================================================
 //  ADAGE AUTOMATION — PRODUCT DATA LOADER
-//  Products are stored in data.csv.
-//  Multi-value fields (industries, useCases, tags, technologyTags,
-//  measuredComponent) are pipe-separated ( | ) inside their cell.
+//  Primary source: Google Sheets (public gviz/tq endpoint)
+//  Fallback:       data.csv (served as a static file)
+//
+//  Column order in the sheet:
+//    A  id
+//    B  name
+//    C  company
+//    D  industries       (pipe-separated: Oil & Gas | Chemical)
+//    E  useCases         (pipe-separated)
+//    F  description
+//    G  onedrive
+//    H  tags             (pipe-separated)
+//    I  technologyTags   (pipe-separated)
+//    J  measuredComponent(pipe-separated)
+//    K  image
 // ============================================================
 
-/**
- * Split a single CSV row, respecting double-quoted fields.
- */
+const SHEET_ID   = '1kFfFCB57ekRwOgjxZFsZh9ojx-Q2xy6ObTiMNUZhqFs';
+const SHEET_NAME = 'Sheet1';
+const SHEET_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+// Fields that are pipe-separated inside a single cell
+const PIPE_FIELDS = ['industries','useCases','tags','technologyTags','measuredComponent'];
+
+// ── Parse a gviz/tq JSON response into product objects ──────────────────────
+function parseSheetData(text) {
+  // The response is wrapped: /*O_o*/\ngoogle.visualization.Query.setResponse({...});
+  // Strip the prefix/suffix to get pure JSON
+  const json = JSON.parse(text.substring(47, text.length - 2));
+  return json.table.rows
+    .filter(row => row.c && row.c[0]?.v) // skip header / empty rows
+    .map(row => {
+      const v = i => (row.c[i]?.v ?? '').toString().trim();
+      const arr = (i, sep = '|') => v(i) ? v(i).split(sep).map(s => s.trim()).filter(Boolean) : [];
+      return {
+        id:               parseInt(v(0), 10) || 0,
+        name:             v(1),
+        company:          v(2),
+        industries:       arr(3),
+        useCases:         arr(4),
+        description:      v(5),
+        onedrive:         v(6),
+        tags:             arr(7),
+        technologyTags:   arr(8),
+        measuredComponent:arr(9),
+        image:            v(10),
+      };
+    });
+}
+
+// ── CSV fallback parser (same logic as before) ───────────────────────────────
 function splitCSVRow(row) {
   const fields = [];
-  let current = '';
-  let inQuotes = false;
+  let cur = '', inQ = false;
   for (let i = 0; i < row.length; i++) {
     const ch = row[i];
     if (ch === '"') {
-      if (inQuotes && row[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(current);
-      current = '';
-    } else {
-      current += ch;
-    }
+      if (inQ && row[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) { fields.push(cur); cur = ''; }
+    else cur += ch;
   }
-  fields.push(current);
+  fields.push(cur);
   return fields;
 }
 
-// Fields stored as pipe-separated arrays
-const ARRAY_FIELDS = ['industries', 'useCases', 'tags', 'technologyTags', 'measuredComponent'];
-
-/**
- * Parse a CSV string into an array of product objects.
- */
 function parseCSV(text) {
-  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n');
   if (!lines.length) return [];
-
   const headers = splitCSVRow(lines[0]);
   const result = [];
-
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
-    const values = splitCSVRow(line);
+    const vals = splitCSVRow(line);
     const obj = {};
-    headers.forEach((h, idx) => {
-      obj[h.trim()] = (values[idx] || '').trim();
+    headers.forEach((h, idx) => { obj[h.trim()] = (vals[idx] || '').trim(); });
+    obj.id = parseInt(obj.id, 10);
+    PIPE_FIELDS.forEach(f => {
+      obj[f] = obj[f] ? obj[f].split('|').map(v => v.trim()).filter(Boolean) : [];
     });
-
-    // Coerce id to number
-    if (obj.id) obj.id = parseInt(obj.id, 10);
-
-    // Coerce all array fields from pipe-separated strings to arrays
-    ARRAY_FIELDS.forEach(field => {
-      obj[field] = obj[field]
-        ? obj[field].split('|').map(v => v.trim()).filter(Boolean)
-        : [];
-    });
-
     result.push(obj);
   }
   return result;
 }
 
-// ── Load CSV and populate globals ──────────────────────────────────────────
-(function loadCSV() {
+// ── Populate global filter arrays from loaded products ───────────────────────
+function buildGlobals(products) {
+  window.PRODUCTS            = products;
+  window.INDUSTRIES          = [...new Set(products.flatMap(p => p.industries      || []))].sort();
+  window.COMPANIES           = [...new Set(products.map(p => p.company))].sort();
+  window.USE_CASES           = [...new Set(products.flatMap(p => p.useCases        || []))].sort();
+  window.TECHNOLOGY_TAGS     = [...new Set(products.flatMap(p => p.technologyTags  || []))].sort();
+  window.MEASURED_COMPONENTS = [...new Set(products.flatMap(p => p.measuredComponent || []))].sort();
+}
+
+// ── Main loader — called by load-products.js ─────────────────────────────────
+// Returns true if data was loaded successfully, false on total failure.
+async function loadProductData() {
+  // 1. Try Google Sheets
   try {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/data.csv', false); // synchronous
-    xhr.send();
-    if (xhr.status === 200 || xhr.status === 0) {
-      window.PRODUCTS = parseCSV(xhr.responseText);
-    } else {
-      console.warn('data.csv not found, PRODUCTS will be empty.');
-      window.PRODUCTS = [];
+    const res = await fetch(SHEET_URL);
+    if (res.ok) {
+      const text = await res.text();
+      const products = parseSheetData(text);
+      if (products.length) {
+        buildGlobals(products);
+        window.__productsSource = 'sheet';
+        return true;
+      }
     }
   } catch (e) {
-    console.error('Failed to load data.csv:', e);
-    window.PRODUCTS = [];
+    console.warn('Google Sheets fetch failed, falling back to CSV:', e);
   }
 
-  // Flatten all values from array fields for filter lists
-  window.INDUSTRIES       = [...new Set(PRODUCTS.flatMap(p => p.industries))].sort();
-  window.COMPANIES        = [...new Set(PRODUCTS.map(p => p.company))].sort();
-  window.USE_CASES        = [...new Set(PRODUCTS.flatMap(p => p.useCases))].sort();
-  window.TECHNOLOGY_TAGS  = [...new Set(PRODUCTS.flatMap(p => p.technologyTags))].sort();
-  window.MEASURED_COMPONENTS = [...new Set(PRODUCTS.flatMap(p => p.measuredComponent))].sort();
-})();
+  // 2. Fallback: data.csv
+  try {
+    const res = await fetch('/data.csv');
+    if (res.ok || res.status === 0) {
+      const text = await res.text();
+      const products = parseCSV(text);
+      if (products.length) {
+        buildGlobals(products);
+        window.__productsSource = 'csv';
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('CSV fallback also failed:', e);
+  }
+
+  // 3. Nothing worked
+  buildGlobals([]);
+  window.__productsSource = 'empty';
+  return false;
+}
