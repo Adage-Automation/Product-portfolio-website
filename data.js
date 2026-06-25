@@ -1,104 +1,95 @@
 // ============================================================
-//  ADAGE AUTOMATION — PRODUCT DATA
-//  Edit this file to add, remove, or update products.
-//  Each row maps directly to what you'd fill in a spreadsheet.
+//  ADAGE AUTOMATION — PRODUCT DATA LOADER
+//  Products are stored in data.csv.
+//  Multi-value fields (industries, useCases, tags, technologyTags,
+//  measuredComponent) are pipe-separated ( | ) inside their cell.
 // ============================================================
 
-const PRODUCTS = [
-  {
-    id: 1,
-    name: "FlowMaster Pro 3000",
-    company: "Emerson",
-    industry: "Oil & Gas",
-    category: "Flow Measurement",
-    description: "High-accuracy Coriolis mass flow meter for custody transfer and process control in upstream and midstream applications.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["Flow", "Coriolis", "Custody Transfer"],
-    image: "" // leave blank to show auto-generated placeholder
-  },
-  {
-    id: 2,
-    name: "PowerGuard XL Series",
-    company: "ABB",
-    industry: "Power",
-    category: "Protection Relays",
-    description: "Numerical protection relay for medium voltage feeders, transformers, and generators with integrated communication.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["Protection", "MV", "IEC 61850"],
-    image: ""
-  },
-  {
-    id: 3,
-    name: "SteelSense Analyzer",
-    company: "Yokogawa",
-    industry: "Steel",
-    category: "Process Analyzers",
-    description: "Online X-ray fluorescence analyzer for real-time elemental composition monitoring in steel production lines.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["XRF", "Analyzer", "Quality Control"],
-    image: ""
-  },
-  {
-    id: 4,
-    name: "ValveMatic Smart Positioner",
-    company: "Metso",
-    industry: "Oil & Gas",
-    category: "Valve Automation",
-    description: "HART-compatible digital valve positioner with built-in diagnostics and partial stroke testing capability.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["Valve", "HART", "Positioner"],
-    image: ""
-  },
-  {
-    id: 5,
-    name: "ThermoScan 800",
-    company: "Endress+Hauser",
-    industry: "Power",
-    category: "Temperature Measurement",
-    description: "Multipoint temperature profiling system for heat exchangers, reactors, and distillation columns.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["Temperature", "Profiling", "Multipoint"],
-    image: ""
-  },
-  {
-    id: 6,
-    name: "LevelPro Radar 5G",
-    company: "Vega",
-    industry: "Steel",
-    category: "Level Measurement",
-    description: "80 GHz FMCW radar level transmitter for bulk solids and liquids in extreme process conditions.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["Radar", "Level", "Non-contact"],
-    image: ""
-  },
-  {
-    id: 7,
-    name: "PressurePilot DP Cell",
-    company: "Honeywell",
-    industry: "Oil & Gas",
-    category: "Pressure Measurement",
-    description: "Differential pressure transmitter with remote seals for aggressive media, rated for SIL 2 safety functions.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["Pressure", "DP", "SIL 2"],
-    image: ""
-  },
-  {
-    id: 8,
-    name: "MotorGuard VFD Series",
-    company: "Siemens",
-    industry: "Power",
-    category: "Drives & Motors",
-    description: "Variable frequency drive for centrifugal pumps and fans, with energy optimization and predictive maintenance features.",
-    onedrive: "https://onedrive.live.com/your-link-here",
-    tags: ["VFD", "Energy", "Motor Control"],
-    image: ""
+/**
+ * Split a single CSV row, respecting double-quoted fields.
+ */
+function splitCSVRow(row) {
+  const fields = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (ch === '"') {
+      if (inQuotes && row[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
   }
-];
+  fields.push(current);
+  return fields;
+}
 
-// ============================================================
-//  FILTER OPTIONS — auto-generated from product data above
-//  (no need to edit this section)
-// ============================================================
-const INDUSTRIES  = [...new Set(PRODUCTS.map(p => p.industry))].sort();
-const COMPANIES   = [...new Set(PRODUCTS.map(p => p.company))].sort();
-const CATEGORIES  = [...new Set(PRODUCTS.map(p => p.category))].sort();
+// Fields stored as pipe-separated arrays
+const ARRAY_FIELDS = ['industries', 'useCases', 'tags', 'technologyTags', 'measuredComponent'];
+
+/**
+ * Parse a CSV string into an array of product objects.
+ */
+function parseCSV(text) {
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  if (!lines.length) return [];
+
+  const headers = splitCSVRow(lines[0]);
+  const result = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const values = splitCSVRow(line);
+    const obj = {};
+    headers.forEach((h, idx) => {
+      obj[h.trim()] = (values[idx] || '').trim();
+    });
+
+    // Coerce id to number
+    if (obj.id) obj.id = parseInt(obj.id, 10);
+
+    // Coerce all array fields from pipe-separated strings to arrays
+    ARRAY_FIELDS.forEach(field => {
+      obj[field] = obj[field]
+        ? obj[field].split('|').map(v => v.trim()).filter(Boolean)
+        : [];
+    });
+
+    result.push(obj);
+  }
+  return result;
+}
+
+// ── Load CSV and populate globals ──────────────────────────────────────────
+(function loadCSV() {
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/data.csv', false); // synchronous
+    xhr.send();
+    if (xhr.status === 200 || xhr.status === 0) {
+      window.PRODUCTS = parseCSV(xhr.responseText);
+    } else {
+      console.warn('data.csv not found, PRODUCTS will be empty.');
+      window.PRODUCTS = [];
+    }
+  } catch (e) {
+    console.error('Failed to load data.csv:', e);
+    window.PRODUCTS = [];
+  }
+
+  // Flatten all values from array fields for filter lists
+  window.INDUSTRIES       = [...new Set(PRODUCTS.flatMap(p => p.industries))].sort();
+  window.COMPANIES        = [...new Set(PRODUCTS.map(p => p.company))].sort();
+  window.USE_CASES        = [...new Set(PRODUCTS.flatMap(p => p.useCases))].sort();
+  window.TECHNOLOGY_TAGS  = [...new Set(PRODUCTS.flatMap(p => p.technologyTags))].sort();
+  window.MEASURED_COMPONENTS = [...new Set(PRODUCTS.flatMap(p => p.measuredComponent))].sort();
+})();

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Product Library — Adage Automation</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
   <style>
     /* ── TOKENS ── */
     :root {
@@ -151,7 +152,7 @@
 
     /* ── SIDEBAR FILTERS ── */
     .sidebar {
-      width: 220px;
+      width: 240px;
       flex-shrink: 0;
       position: sticky;
       top: calc(var(--nav-h) + 24px);
@@ -167,45 +168,200 @@
     }
 
     .filter-section {
-      margin-bottom: 20px;
-    }
-
-    .filter-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--grey-800);
       margin-bottom: 8px;
+      position: relative;
     }
 
-    .filter-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .filter-list li button {
+    /* ── DROPDOWN TRIGGER (div, not button — avoids nested-button bug) ── */
+    .filter-trigger {
       width: 100%;
-      text-align: left;
-      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      padding: 9px 12px;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
       font-size: 13px;
+      font-family: var(--font-ui);
+      color: var(--grey-600);
+      cursor: pointer;
+      transition: border-color .15s;
+      user-select: none;
+      gap: 6px;
+    }
+
+    .filter-trigger:hover { border-color: var(--grey-300); }
+
+    .filter-trigger.has-value {
+      border-color: var(--teal);
+      color: var(--teal-dark);
+      background: var(--teal-pale);
+      font-weight: 600;
+    }
+
+    .filter-trigger.open { border-color: var(--teal); }
+
+    .filter-trigger-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ✕ clear button — shown only when a value is active */
+    .filter-clear-x {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 16px; height: 16px;
+      background: var(--teal);
+      color: white;
+      border-radius: 50%;
+      font-size: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .filter-trigger.has-value .filter-clear-x { display: flex; }
+
+    /* chevron arrow — always visible, rotates when open */
+    .filter-chevron {
+      width: 14px; height: 14px;
+      stroke: currentColor;
+      fill: none;
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .filter-trigger.open .filter-chevron { transform: rotate(180deg); }
+
+    /* ── DROPDOWN PANEL ── */
+    .filter-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--white);
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      z-index: 200;
+      overflow: hidden;
+    }
+    .filter-dropdown.open { display: block; }
+
+    .filter-search-wrap {
+      padding: 8px;
+      border-bottom: 1px solid var(--grey-100);
+    }
+
+    .filter-search-wrap input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--grey-200);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-family: var(--font-ui);
+      color: var(--grey-900);
+      outline: none;
+      background: var(--grey-50);
+      transition: border-color .15s;
+    }
+    .filter-search-wrap input:focus {
+      border-color: var(--teal);
+      background: var(--white);
+    }
+
+    .filter-options {
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .filter-option {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: var(--font-ui);
       color: var(--grey-600);
       background: transparent;
       border: none;
-      border-radius: var(--radius);
       cursor: pointer;
-      transition: background .12s, color .12s;
+      text-align: left;
+      transition: background .1s;
+    }
+    .filter-option:hover { background: var(--teal-pale); color: var(--teal-dark); }
+    .filter-option.selected { color: var(--teal-dark); font-weight: 600; background: var(--teal-pale); }
+
+    .opt-check-box {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      border: 1.5px solid var(--grey-300);
+      border-radius: 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: transparent;
+      background: var(--white);
+      transition: all .12s;
     }
 
-    .filter-list li button:hover {
-      background: var(--teal-pale);
-      color: var(--teal);
-    }
-
-    .filter-list li button.active {
+    .filter-option.selected .opt-check-box {
       background: var(--teal);
+      border-color: var(--teal);
       color: white;
+    }
+
+    .opt-check {
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+      stroke: var(--teal);
+      fill: none;
+      opacity: 0;
+    }
+    .filter-option.selected .opt-check { opacity: 1; }
+
+    .filter-no-results {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--grey-300);
+      text-align: center;
+    }
+
+    /* ── ACTIVE CHIPS ── */
+    .active-filters-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .active-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: var(--teal-pale);
+      border: 1px solid rgba(11,110,110,.2);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--teal-dark);
       font-weight: 500;
+    }
+
+    .active-chip button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--teal);
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
     }
 
     .filter-reset {
@@ -215,7 +371,7 @@
       border: none;
       cursor: pointer;
       padding: 0;
-      margin-top: 4px;
+      margin-top: 8px;
       text-decoration: underline;
     }
 
@@ -282,26 +438,18 @@
       object-fit: cover;
     }
 
+    /* Placeholder: icon centred on tinted background, no text */
     .card-thumb .placeholder-icon {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      width: 100%; height: 100%;
     }
 
-    .card-thumb .placeholder-icon svg {
-      width: 40px; height: 40px;
-      fill: var(--teal);
-      opacity: .35;
-    }
-
-    .card-thumb .placeholder-icon span {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .8px;
+    .card-thumb .placeholder-icon i {
+      font-size: 40px;
       color: var(--teal);
-      opacity: .5;
+      opacity: .45;
     }
 
     .card-body {
@@ -360,12 +508,29 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 10px 16px;
       border-top: 1px solid var(--grey-100);
-      font-size: 12px;
-      color: var(--teal);
-      font-weight: 500;
+      gap: 8px;
     }
+
+    .btn-open-folder {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--teal);
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+
+    .btn-open-folder:hover { background: var(--teal-dark); }
+
+    .btn-open-folder i { font-size: 13px; }
 
     .card-footer svg {
       width: 14px; height: 14px;
@@ -377,10 +542,11 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      margin-left: auto;
     }
 
     .btn-edit {
-      padding: 4px 10px;
+      padding: 5px 10px;
       font-size: 11px;
       font-weight: 600;
       color: var(--grey-600);
@@ -389,6 +555,7 @@
       border-radius: var(--radius);
       cursor: pointer;
       transition: all .15s;
+      white-space: nowrap;
     }
 
     .btn-edit:hover {
@@ -457,22 +624,79 @@
     <aside class="sidebar">
       <div class="sidebar-title">Filters</div>
 
-      <div class="filter-section">
-        <div class="filter-label">Industry</div>
-        <ul class="filter-list" id="industryFilter"></ul>
+      <div class="active-filters-bar" id="activeFiltersBar"></div>
+
+      <div class="filter-section" id="fs-industry">
+        <div class="filter-trigger" id="ft-industry" onclick="toggleDropdown('industry')">
+          <span class="filter-trigger-label" id="fl-industry">Industry</span>
+          <span class="filter-clear-x" id="fx-industry" onclick="event.stopPropagation(); clearFilter('industry')">✕</span>
+          <svg class="filter-chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-dropdown" id="fd-industry">
+          <div class="filter-search-wrap">
+            <input type="text" id="fi-industry" placeholder="Search industries…" oninput="filterDropdown('industry', this.value)" autocomplete="off" />
+          </div>
+          <div class="filter-options" id="fo-industry"></div>
+        </div>
       </div>
 
-      <div class="filter-section">
-        <div class="filter-label">Company</div>
-        <ul class="filter-list" id="companyFilter"></ul>
+      <div class="filter-section" id="fs-company">
+        <div class="filter-trigger" id="ft-company" onclick="toggleDropdown('company')">
+          <span class="filter-trigger-label" id="fl-company">Company</span>
+          <span class="filter-clear-x" id="fx-company" onclick="event.stopPropagation(); clearFilter('company')">✕</span>
+          <svg class="filter-chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-dropdown" id="fd-company">
+          <div class="filter-search-wrap">
+            <input type="text" id="fi-company" placeholder="Search companies…" oninput="filterDropdown('company', this.value)" autocomplete="off" />
+          </div>
+          <div class="filter-options" id="fo-company"></div>
+        </div>
       </div>
 
-      <div class="filter-section">
-        <div class="filter-label">Category</div>
-        <ul class="filter-list" id="categoryFilter"></ul>
+      <div class="filter-section" id="fs-useCase">
+        <div class="filter-trigger" id="ft-useCase" onclick="toggleDropdown('useCase')">
+          <span class="filter-trigger-label" id="fl-useCase">Use Cases</span>
+          <span class="filter-clear-x" id="fx-useCase" onclick="event.stopPropagation(); clearFilter('useCase')">✕</span>
+          <svg class="filter-chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-dropdown" id="fd-useCase">
+          <div class="filter-search-wrap">
+            <input type="text" id="fi-useCase" placeholder="Search use cases…" oninput="filterDropdown('useCase', this.value)" autocomplete="off" />
+          </div>
+          <div class="filter-options" id="fo-useCase"></div>
+        </div>
       </div>
 
-      <button class="filter-reset" onclick="resetFilters()">Clear all filters</button>
+      <div class="filter-section" id="fs-technologyTag">
+        <div class="filter-trigger" id="ft-technologyTag" onclick="toggleDropdown('technologyTag')">
+          <span class="filter-trigger-label" id="fl-technologyTag">Technology Tags</span>
+          <span class="filter-clear-x" id="fx-technologyTag" onclick="event.stopPropagation(); clearFilter('technologyTag')">✕</span>
+          <svg class="filter-chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-dropdown" id="fd-technologyTag">
+          <div class="filter-search-wrap">
+            <input type="text" id="fi-technologyTag" placeholder="Search technology tags…" oninput="filterDropdown('technologyTag', this.value)" autocomplete="off" />
+          </div>
+          <div class="filter-options" id="fo-technologyTag"></div>
+        </div>
+      </div>
+
+      <div class="filter-section" id="fs-measuredComponent">
+        <div class="filter-trigger" id="ft-measuredComponent" onclick="toggleDropdown('measuredComponent')">
+          <span class="filter-trigger-label" id="fl-measuredComponent">Measured Component</span>
+          <span class="filter-clear-x" id="fx-measuredComponent" onclick="event.stopPropagation(); clearFilter('measuredComponent')">✕</span>
+          <svg class="filter-chevron" viewBox="0 0 24 24" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="filter-dropdown" id="fd-measuredComponent">
+          <div class="filter-search-wrap">
+            <input type="text" id="fi-measuredComponent" placeholder="Search components…" oninput="filterDropdown('measuredComponent', this.value)" autocomplete="off" />
+          </div>
+          <div class="filter-options" id="fo-measuredComponent"></div>
+        </div>
+      </div>
+
+      <button class="filter-reset" id="resetBtn" style="display:none" onclick="resetFilters()">Clear all filters</button>
     </aside>
 
     <!-- MAIN -->
@@ -488,14 +712,9 @@
   <script src="data.js"></script>
   <script src="js/load-products.js"></script>
   <script>
-    async function init() {
-      await loadProductsFromServer();
-
     // ── AUTH GUARD ──
     const user = sessionStorage.getItem("adage_user");
     if (!user) window.location.href = "index.html";
-    const isAdmin = user === "admin@adageautomation.com";
-    document.getElementById("userName").textContent = user ? user.split("@")[0] : "";
 
     function logout() {
       sessionStorage.removeItem("adage_user");
@@ -503,48 +722,185 @@
       window.location.href = "index.html";
     }
 
-    // ── STATE ──
-    let activeFilters = { industry: null, company: null, category: null };
-    let searchQuery   = "";
+    // ── FILTER CONFIG ──
+    const FILTER_CONFIG = [
+      { key: 'industry',          label: 'Industry',           values: () => window.INDUSTRIES          || [] },
+      { key: 'company',           label: 'Company',            values: () => window.COMPANIES           || [] },
+      { key: 'useCase',           label: 'Use Cases',          values: () => window.USE_CASES           || [] },
+      { key: 'technologyTag',     label: 'Technology Tags',    values: () => window.TECHNOLOGY_TAGS     || [] },
+      { key: 'measuredComponent', label: 'Measured Component', values: () => window.MEASURED_COMPONENTS || [] },
+    ];
 
-    // ── RENDER FILTER LISTS ──
-    function renderFilterList(elId, values, key) {
-      const el = document.getElementById(elId);
-      el.innerHTML = "";
-      values.forEach(v => {
-        const li  = document.createElement("li");
-        const btn = document.createElement("button");
-        btn.textContent = v;
-        btn.className   = activeFilters[key] === v ? "active" : "";
-        btn.onclick     = () => toggleFilter(key, v);
-        li.appendChild(btn);
-        el.appendChild(li);
+    // Each key holds a Set of selected values (multi-select)
+    const activeFilters = {
+      industry: new Set(), company: new Set(), useCase: new Set(),
+      technologyTag: new Set(), measuredComponent: new Set()
+    };
+
+    let openDropdown = null;
+    let searchQuery  = "";
+
+    // ── EVENT DELEGATION — attach once to each options container ──────────
+    // This is the key fix: instead of inline onmousedown on dynamically-created
+    // divs (which can silently fail), we attach a single listener to the stable
+    // parent container (#fo-*) that was in the HTML from the start.
+    function attachOptionListeners() {
+      FILTER_CONFIG.forEach(f => {
+        const container = document.getElementById('fo-' + f.key);
+        container.addEventListener('mousedown', function(e) {
+          e.preventDefault(); // prevent blur / outside-click logic firing
+          e.stopPropagation();
+          const optEl = e.target.closest('.filter-option');
+          if (!optEl) return;
+          const value = optEl.dataset.value;
+          if (value === undefined) return;
+          const set = activeFilters[f.key];
+          if (set.has(value)) { set.delete(value); } else { set.add(value); }
+          renderOptions(f.key, document.getElementById('fi-' + f.key).value);
+          updateTriggerLabels();
+          renderActiveChips();
+          renderCards(getFiltered());
+          updateCount();
+        });
       });
     }
 
-    function toggleFilter(key, value) {
-      activeFilters[key] = activeFilters[key] === value ? null : value;
-      renderAll();
+    // ── DROPDOWN OPEN / CLOSE ──
+    function toggleDropdown(key) {
+      if (openDropdown === key) { closeAllDropdowns(); return; }
+      closeAllDropdowns();
+      openDropdown = key;
+      document.getElementById('fd-' + key).classList.add('open');
+      document.getElementById('ft-' + key).classList.add('open');
+      const inp = document.getElementById('fi-' + key);
+      inp.value = '';
+      renderOptions(key, '');
+      setTimeout(() => inp.focus(), 30);
     }
 
+    function closeAllDropdowns() {
+      FILTER_CONFIG.forEach(f => {
+        document.getElementById('fd-' + f.key).classList.remove('open');
+        document.getElementById('ft-' + f.key).classList.remove('open');
+      });
+      openDropdown = null;
+    }
+
+    // Close on outside mousedown
+    document.addEventListener('mousedown', e => {
+      if (!openDropdown) return;
+      if (!e.target.closest('#fs-' + openDropdown)) closeAllDropdowns();
+    });
+
+    // ── RENDER OPTIONS ──
+    function renderOptions(key, query) {
+      const cfg    = FILTER_CONFIG.find(f => f.key === key);
+      const all    = cfg.values();
+      const q      = query.trim().toLowerCase();
+      const values = q ? all.filter(v => v.toLowerCase().includes(q)) : all;
+      const el     = document.getElementById('fo-' + key);
+
+      if (!values.length) {
+        el.innerHTML = '<div class="filter-no-results">No matches</div>';
+        return;
+      }
+
+      // data-value carries the option value; no inline event handlers
+      el.innerHTML = values.map(v => {
+        const sel = activeFilters[key].has(v);
+        // Escape for safe use inside an attribute
+        const escaped = v.replace(/"/g, '&quot;');
+        return `<div class="filter-option ${sel ? 'selected' : ''}" data-value="${escaped}">
+          <span class="opt-check-box">${sel ? '✓' : ''}</span>
+          ${v}
+        </div>`;
+      }).join('');
+    }
+
+    function filterDropdown(key, query) { renderOptions(key, query); }
+
+    // ── CLEAR ONE FILTER ──
+    function clearFilter(key) {
+      activeFilters[key].clear();
+      updateTriggerLabels();
+      renderActiveChips();
+      renderCards(getFiltered());
+      updateCount();
+    }
+
+    // ── CLEAR ALL ──
     function resetFilters() {
-      activeFilters = { industry: null, company: null, category: null };
+      FILTER_CONFIG.forEach(f => activeFilters[f.key].clear());
       document.getElementById("searchInput").value = "";
       searchQuery = "";
-      renderAll();
+      closeAllDropdowns();
+      updateTriggerLabels();
+      renderActiveChips();
+      renderCards(getFiltered());
+      updateCount();
     }
 
-    // ── FILTER + SEARCH LOGIC ──
+    // ── TRIGGER LABEL ──
+    function updateTriggerLabels() {
+      let anyActive = false;
+      FILTER_CONFIG.forEach(f => {
+        const set = activeFilters[f.key];
+        const triggerEl = document.getElementById('ft-' + f.key);
+        const labelEl   = document.getElementById('fl-' + f.key);
+        if (set.size > 0) {
+          labelEl.textContent = set.size === 1
+            ? [...set][0]
+            : `${[...set][0]} +${set.size - 1}`;
+          triggerEl.classList.add('has-value');
+          anyActive = true;
+        } else {
+          labelEl.textContent = f.label;
+          triggerEl.classList.remove('has-value');
+        }
+      });
+      document.getElementById('resetBtn').style.display = anyActive ? 'inline' : 'none';
+    }
+
+    // ── ACTIVE CHIPS ──
+    function renderActiveChips() {
+      const bar = document.getElementById('activeFiltersBar');
+      const chips = [];
+      FILTER_CONFIG.forEach(f => {
+        activeFilters[f.key].forEach(v => {
+          const escaped = v.replace(/'/g, "\\'");
+          chips.push(`<span class="active-chip">
+            <span>${f.label}: ${v}</span>
+            <button onclick="removeChip('${f.key}','${escaped}')" title="Remove">✕</button>
+          </span>`);
+        });
+      });
+      bar.innerHTML = chips.join('');
+    }
+
+    function removeChip(key, value) {
+      activeFilters[key].delete(value);
+      updateTriggerLabels();
+      renderActiveChips();
+      renderCards(getFiltered());
+      updateCount();
+    }
+
+    // ── FILTER LOGIC ──
     function getFiltered() {
       const q = searchQuery.toLowerCase();
-      return PRODUCTS.filter(p => {
-        if (activeFilters.industry && p.industry !== activeFilters.industry) return false;
-        if (activeFilters.company  && p.company  !== activeFilters.company)  return false;
-        if (activeFilters.category && p.category !== activeFilters.category) return false;
+      return (window.PRODUCTS || []).filter(p => {
+        const f = activeFilters;
+        if (f.industry.size > 0          && !(p.industries        || []).some(v => f.industry.has(v)))          return false;
+        if (f.company.size > 0           && !f.company.has(p.company))                                          return false;
+        if (f.useCase.size > 0           && !(p.useCases          || []).some(v => f.useCase.has(v)))           return false;
+        if (f.technologyTag.size > 0     && !(p.technologyTags    || []).some(v => f.technologyTag.has(v)))     return false;
+        if (f.measuredComponent.size > 0 && !(p.measuredComponent || []).some(v => f.measuredComponent.has(v))) return false;
         if (q) {
-          const haystack = [p.name, p.company, p.industry, p.category, p.description, ...(p.tags||[])]
-            .join(" ").toLowerCase();
-          if (!haystack.includes(q)) return false;
+          const hay = [p.name, p.company,
+            ...(p.industries||[]), ...(p.useCases||[]), p.description,
+            ...(p.tags||[]), ...(p.technologyTags||[]), ...(p.measuredComponent||[])
+          ].join(' ').toLowerCase();
+          if (!hay.includes(q)) return false;
         }
         return true;
       });
@@ -554,7 +910,6 @@
     function renderCards(products) {
       const grid = document.getElementById("productGrid");
       grid.innerHTML = "";
-
       if (!products.length) {
         grid.innerHTML = `
           <div class="empty-state">
@@ -564,37 +919,50 @@
           </div>`;
         return;
       }
-
+      const isAdmin = user === "admin@adageautomation.com";
       products.forEach(p => {
         const card = document.createElement("div");
         card.className = "product-card";
-        card.onclick   = () => openProduct(p);
+        card.onclick = () => openProduct(p);
+
+        // Placeholder: pick a relevant Tabler icon based on first use case keyword
+        const uc = ((p.useCases||[])[0] || '').toLowerCase();
+        let icon = 'ti-atom';
+        if (/flow|meter|coriolis/.test(uc))          icon = 'ti-ripple';
+        else if (/pressure|dp/.test(uc))             icon = 'ti-gauge';
+        else if (/temperature|thermal/.test(uc))     icon = 'ti-temperature';
+        else if (/level/.test(uc))                   icon = 'ti-container';
+        else if (/gas|analyzer|chromatograph/.test(uc)) icon = 'ti-test-pipe';
+        else if (/valve|positioner/.test(uc))        icon = 'ti-valve';
+        else if (/power|drive|motor|vfd/.test(uc))   icon = 'ti-bolt';
+        else if (/protection|relay/.test(uc))        icon = 'ti-shield-bolt';
 
         const thumb = p.image
           ? `<img src="${p.image}" alt="${p.name}" />`
-          : `<div class="placeholder-icon">
-               <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-               <span>${p.category}</span>
-             </div>`;
+          : `<div class="placeholder-icon"><i class="ti ${icon}"></i></div>`;
+
+        // Only 2 badges: Company + first Use Case
+        const firstUseCase = (p.useCases||[])[0];
+        const badges = [
+          `<span class="badge badge-company">${p.company}</span>`,
+          firstUseCase ? `<span class="badge badge-category">${firstUseCase}</span>` : ''
+        ].join('');
 
         card.innerHTML = `
           <div class="card-thumb">${thumb}</div>
           <div class="card-body">
-            <div class="card-meta">
-              <span class="badge badge-industry">${p.industry}</span>
-              <span class="badge badge-company">${p.company}</span>
-            </div>
+            <div class="card-meta">${badges}</div>
             <div class="card-name">${p.name}</div>
             <div class="card-desc">${p.description}</div>
           </div>
           <div class="card-footer">
-            <span>View OneDrive Folder</span>
+            <a class="btn-open-folder" href="${p.onedrive}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+              <i class="ti ti-folder-open"></i> Open File/Folder
+            </a>
             <div class="card-footer-actions">
               ${isAdmin ? `<button type="button" class="btn-edit" onclick="event.stopPropagation(); openEditor(${p.id})">Edit</button>` : ""}
-              <svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
             </div>
           </div>`;
-
         grid.appendChild(card);
       });
     }
@@ -608,31 +976,29 @@
       window.location.href = `adage-data-editor.html?id=${id}`;
     }
 
-    // ── RENDER ALL ──
-    function renderAll() {
-      renderFilterList("industryFilter", INDUSTRIES, "industry");
-      renderFilterList("companyFilter",  COMPANIES,  "company");
-      renderFilterList("categoryFilter", CATEGORIES, "category");
-
+    function updateCount() {
       const filtered = getFiltered();
-      renderCards(filtered);
-
-      const total = PRODUCTS.length;
-      const shown = filtered.length;
-      const count = document.getElementById("resultsCount");
-      count.innerHTML = shown === total
+      const total = (window.PRODUCTS || []).length;
+      const shown  = filtered.length;
+      document.getElementById("resultsCount").innerHTML = shown === total
         ? `Showing all <strong>${total}</strong> products`
         : `Showing <strong>${shown}</strong> of <strong>${total}</strong> products`;
     }
 
-    // ── SEARCH ──
     document.getElementById("searchInput").addEventListener("input", e => {
       searchQuery = e.target.value.trim();
-      renderAll();
+      renderCards(getFiltered());
+      updateCount();
     });
 
     // ── INIT ──
-    renderAll();
+    async function init() {
+      await loadProductsFromServer();
+      document.getElementById("userName").textContent = user ? user.split("@")[0] : "";
+      attachOptionListeners(); // attach delegation listeners once, to stable DOM nodes
+      updateTriggerLabels();
+      renderCards(getFiltered());
+      updateCount();
     }
 
     init();
